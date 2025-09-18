@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import sys
 import os
@@ -17,6 +17,16 @@ CORS(app)  # CORS 활성화
 # 데이터베이스 매니저 및 추천 엔진 초기화
 db_manager = DatabaseManager()
 recommendation_engine = RecommendationEngine()
+
+@app.route('/')
+def index():
+    """메인 페이지 서빙"""
+    return send_from_directory('..', 'index.html')
+
+@app.route('/<path:filename>')
+def static_files(filename):
+    """정적 파일 서빙"""
+    return send_from_directory('..', filename)
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
