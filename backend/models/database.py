@@ -56,7 +56,7 @@ class DatabaseManager:
         conn.close()
     
     def load_sample_data(self):
-        """샘플 데이터 로드 (빠른 배포를 위해)"""
+        """전체 데이터 로드"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
@@ -64,18 +64,63 @@ class DatabaseManager:
         cursor.execute('DELETE FROM restaurants')
         cursor.execute('DELETE FROM events')
         
-        # 샘플 백년가게 데이터
+        # 전체 백년가게 데이터 로드
+        try:
+            from services.data_processor import DataProcessor
+            processor = DataProcessor()
+            
+            # 백년가게 데이터 로드
+            restaurant_data = processor.load_restaurant_data('data/소상공인시장진흥공단_전국 백년가게 지정리스트 현황 정보_20250724.csv')
+            for restaurant in restaurant_data:
+                cursor.execute('''
+                    INSERT INTO restaurants (id, name, address, phone, region)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (
+                    restaurant['id'],
+                    restaurant['name'],
+                    restaurant['address'],
+                    restaurant['phone'],
+                    restaurant['region']
+                ))
+            
+            # 행사일정 데이터 로드
+            event_data = processor.load_event_data('data/(재)연구개발특구진흥재단_행사일정_20250714.csv')
+            for event in event_data:
+                cursor.execute('''
+                    INSERT INTO events (id, organization, event_name, host_organization, 
+                                       region, location, tech_category, hashtags, start_date, end_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    event['id'],
+                    event['organization'],
+                    event['event_name'],
+                    event['host_organization'],
+                    event['region'],
+                    event['location'],
+                    event['tech_category'],
+                    event['hashtags'],
+                    event['start_date'],
+                    event['end_date']
+                ))
+            
+            print(f"전체 데이터 로드 완료: 백년가게 {len(restaurant_data)}개, 행사 {len(event_data)}개")
+            
+        except Exception as e:
+            print(f"전체 데이터 로드 실패, 샘플 데이터 사용: {e}")
+            # 샘플 데이터로 폴백
+            self._load_fallback_data(cursor)
+        
+        conn.commit()
+        conn.close()
+    
+    def _load_fallback_data(self, cursor):
+        """폴백 샘플 데이터"""
         sample_restaurants = [
             (1, '늘채움', '전북 전주시 덕진구 덕진연못3길 6', '', '전북'),
             (2, '대림동삼거리먼지막순대국', '서울 영등포구 시흥대로 185길 11', '', '서울'),
             (3, '만석장', '서울 은평구 대서문길 43-10 2층', '', '서울'),
             (4, '선천집', '서울 종로구 인사동 14길5', '', '서울'),
-            (5, '고려회관', '대전 중구 중앙로109번길 30, 2층', '', '대전'),
-            (6, '극동제과점', '대전 중구 충무로 73', '', '대전'),
-            (7, '귀빈돌솥밥', '대전 서구 만년로68번길 21', '', '대전'),
-            (8, '나이테플라워', '대전 중구 대둔산로 384', '', '대전'),
-            (9, '부산돼지국밥', '부산 중구 중앙대로 26', '', '부산'),
-            (10, '대구막창집', '대구 중구 동성로 123', '', '대구')
+            (5, '고려회관', '대전 중구 중앙로109번길 30, 2층', '', '대전')
         ]
         
         cursor.executemany('''
@@ -83,13 +128,9 @@ class DatabaseManager:
             VALUES (?, ?, ?, ?, ?)
         ''', sample_restaurants)
         
-        # 샘플 행사 데이터
         sample_events = [
             (1, '홍보협력팀', '2023 연구개발특구 신년인사회', '연구개발특구진흥재단', '대덕특구', '대전 DCC', '기타', '#신년인사회', '2023-01-30', '2023-01-30'),
-            (2, '연구개발특구진흥재단', '환경기후분야 국내외 R&BD 활성화를 위한 심포지움', '인천대학교 환경공학과', '과학벨트', '경원재 엠배서더(인천 송도)', 'ET,기타', '#환경', '2023-01-12', '2023-01-12'),
-            (3, '연구개발특구진흥재단', '대구디지털혁신진흥원 2023년 지원사업 설명회', '(재)대구디지털혁신진흥원', '대구특구', '온라인', '기타', '#유관기관', '2023-01-19', '2023-01-19'),
-            (4, '연구개발특구진흥재단', '제6차 지방과학기술진흥종합계획 공유회', '한국과학기술기획평가원(KISTEP)', '부산특구', '부산 아스티호텔', '기타', '#과학기술', '2023-01-11', '2023-01-11'),
-            (5, '특구진흥원', '전북대학교 2023 LINC 혁신성장캠프', '전북대학교', '전북특구', '전북대학교 중앙도서관', '기타', '#전북대학교', '2023-01-12', '2023-01-13')
+            (2, '연구개발특구진흥재단', '환경기후분야 국내외 R&BD 활성화를 위한 심포지움', '인천대학교 환경공학과', '과학벨트', '경원재 엠배서더(인천 송도)', 'ET,기타', '#환경', '2023-01-12', '2023-01-12')
         ]
         
         cursor.executemany('''
@@ -97,10 +138,6 @@ class DatabaseManager:
                                region, location, tech_category, hashtags, start_date, end_date)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', sample_events)
-        
-        conn.commit()
-        conn.close()
-        print("샘플 데이터 로드 완료")
     
     def get_restaurants_by_region(self, region: str) -> List[Dict[str, Any]]:
         """지역별 백년가게 조회"""
