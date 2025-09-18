@@ -69,8 +69,26 @@ class DatabaseManager:
             from services.data_processor import DataProcessor
             processor = DataProcessor()
             
+            # 파일 경로 확인
+            import os
+            csv_files = [
+                'data/소상공인시장진흥공단_전국 백년가게 지정리스트 현황 정보_20250724.csv',
+                '../data/소상공인시장진흥공단_전국 백년가게 지정리스트 현황 정보_20250724.csv',
+                '소상공인시장진흥공단_전국 백년가게 지정리스트 현황 정보_20250724.csv'
+            ]
+            
+            restaurant_file = None
+            for file_path in csv_files:
+                if os.path.exists(file_path):
+                    restaurant_file = file_path
+                    print(f"백년가게 파일 발견: {file_path}")
+                    break
+            
+            if not restaurant_file:
+                raise Exception("백년가게 CSV 파일을 찾을 수 없습니다")
+            
             # 백년가게 데이터 로드
-            restaurant_data = processor.load_restaurant_data('data/소상공인시장진흥공단_전국 백년가게 지정리스트 현황 정보_20250724.csv')
+            restaurant_data = processor.load_restaurant_data(restaurant_file)
             for restaurant in restaurant_data:
                 cursor.execute('''
                     INSERT INTO restaurants (id, name, address, phone, region)
@@ -83,27 +101,44 @@ class DatabaseManager:
                     restaurant['region']
                 ))
             
-            # 행사일정 데이터 로드
-            event_data = processor.load_event_data('data/(재)연구개발특구진흥재단_행사일정_20250714.csv')
-            for event in event_data:
-                cursor.execute('''
-                    INSERT INTO events (id, organization, event_name, host_organization, 
-                                       region, location, tech_category, hashtags, start_date, end_date)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    event['id'],
-                    event['organization'],
-                    event['event_name'],
-                    event['host_organization'],
-                    event['region'],
-                    event['location'],
-                    event['tech_category'],
-                    event['hashtags'],
-                    event['start_date'],
-                    event['end_date']
-                ))
+            # 행사일정 파일 찾기
+            event_files = [
+                'data/(재)연구개발특구진흥재단_행사일정_20250714.csv',
+                '../data/(재)연구개발특구진흥재단_행사일정_20250714.csv',
+                '(재)연구개발특구진흥재단_행사일정_20250714.csv'
+            ]
             
-            print(f"전체 데이터 로드 완료: 백년가게 {len(restaurant_data)}개, 행사 {len(event_data)}개")
+            event_file = None
+            for file_path in event_files:
+                if os.path.exists(file_path):
+                    event_file = file_path
+                    print(f"행사일정 파일 발견: {file_path}")
+                    break
+            
+            if event_file:
+                # 행사일정 데이터 로드
+                event_data = processor.load_event_data(event_file)
+                for event in event_data:
+                    cursor.execute('''
+                        INSERT INTO events (id, organization, event_name, host_organization, 
+                                           region, location, tech_category, hashtags, start_date, end_date)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        event['id'],
+                        event['organization'],
+                        event['event_name'],
+                        event['host_organization'],
+                        event['region'],
+                        event['location'],
+                        event['tech_category'],
+                        event['hashtags'],
+                        event['start_date'],
+                        event['end_date']
+                    ))
+            else:
+                print("행사일정 파일을 찾을 수 없어 백년가게만 로드합니다")
+            
+            print(f"전체 데이터 로드 완료: 백년가게 {len(restaurant_data)}개")
             
         except Exception as e:
             print(f"전체 데이터 로드 실패, 샘플 데이터 사용: {e}")
