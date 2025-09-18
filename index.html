@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hungry People - 식사 장소 추천 서비스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .results-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card .region {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍽️ Hungry People</h1>
+        <p>식사 장소 추천 서비스 - 신뢰할 수 있는 백년가게와 행사 정보</p>
+    </div>
+    
+    <div class="container">
+        <div class="search-section">
+            <div class="search-form">
+                <input type="text" id="searchInput" class="search-input" placeholder="검색어를 입력하세요 (예: 서울, 대전 DCC, 컨퍼런스)">
+                <button onclick="search()" class="btn">검색</button>
+            </div>
+            <div class="filter-section">
+                <select id="regionSelect" class="filter-select">
+                    <option value="">전체 지역</option>
+                </select>
+                <button onclick="loadRegions()" class="btn">지역 목록 새로고침</button>
+            </div>
+        </div>
+        
+        <div class="stats" id="statsSection">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRestaurants">-</div>
+                <div class="stat-label">백년가게</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalEvents">-</div>
+                <div class="stat-label">행사일정</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalRegions">-</div>
+                <div class="stat-label">지역</div>
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab(0)">백년가게</button>
+                <button class="tab" onclick="switchTab(1)">행사일정</button>
+            </div>
+            
+            <div id="errorMessage" class="error" style="display: none;"></div>
+            <div id="loadingMessage" class="loading" style="display: none;">데이터를 불러오는 중...</div>
+            
+            <div id="restaurantsTab" class="results-grid"></div>
+            <div id="eventsTab" class="results-grid" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5001/api';
+        let currentTab = 0;
+        let restaurants = [];
+        let events = [];
+        
+        // 페이지 로드 시 초기 데이터 로드
+        window.onload = function() {
+            loadStats();
+            loadRegions();
+            loadInitialData();
+        };
+        
+        // 통계 정보 로드
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalRestaurants').textContent = data.data.total_restaurants;
+                    document.getElementById('totalEvents').textContent = data.data.total_events;
+                    document.getElementById('totalRegions').textContent = data.data.total_regions;
+                }
+            } catch (error) {
+                console.error('통계 로드 실패:', error);
+            }
+        }
+        
+        // 지역 목록 로드
+        async function loadRegions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/regions`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const regionSelect = document.getElementById('regionSelect');
+                    regionSelect.innerHTML = '<option value="">전체 지역</option>';
+                    
+                    data.data.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region;
+                        option.textContent = region;
+                        regionSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('지역 목록 로드 실패:', error);
+            }
+        }
+        
+        // 초기 데이터 로드
+        async function loadInitialData() {
+            showLoading(true);
+            try {
+                const [restaurantsRes, eventsRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/restaurants?limit=20`),
+                    fetch(`${API_BASE_URL}/events?limit=20`)
+                ]);
+                
+                const restaurantsData = await restaurantsRes.json();
+                const eventsData = await eventsRes.json();
+                
+                if (restaurantsData.success) {
+                    restaurants = restaurantsData.data;
+                    displayRestaurants(restaurants);
+                }
+                
+                if (eventsData.success) {
+                    events = eventsData.data;
+                    displayEvents(events);
+                }
+            } catch (error) {
+                showError('데이터를 불러오는 중 오류가 발생했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 검색 함수
+        async function search() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}&limit=20`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    restaurants = data.data.restaurants;
+                    events = data.data.events;
+                    displayRestaurants(restaurants);
+                    displayEvents(events);
+                } else {
+                    showError(data.error || '검색 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                showError('검색 중 오류가 발생했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 지역 필터
+        async function filterByRegion() {
+            const region = document.getElementById('regionSelect').value;
+            if (!region) return;
+            
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/restaurants?region=${encodeURIComponent(region)}&limit=20`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    restaurants = data.data;
+                    displayRestaurants(restaurants);
+                }
+            } catch (error) {
+                showError('지역별 필터링 중 오류가 발생했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 백년가게 표시
+        function displayRestaurants(restaurants) {
+            const container = document.getElementById('restaurantsTab');
+            container.innerHTML = '';
+            
+            restaurants.forEach(restaurant => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${restaurant.name}</h3>
+                    <p>📍 ${restaurant.address}</p>
+                    ${restaurant.phone ? `<p>📞 ${restaurant.phone}</p>` : ''}
+                    <span class="region">${restaurant.region}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // 행사일정 표시
+        function displayEvents(events) {
+            const container = document.getElementById('eventsTab');
+            container.innerHTML = '';
+            
+            events.forEach(event => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${event.event_name}</h3>
+                    <p>📍 ${event.location}</p>
+                    <p>📅 ${event.start_date} ${event.end_date !== event.start_date ? `~ ${event.end_date}` : ''}</p>
+                    <p>🏢 ${event.host_organization}</p>
+                    <span class="region">${event.region}</span>
+                    <br><br>
+                    <button class="btn" onclick="getRecommendations('${event.location}')">근처 백년가게 추천</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // 추천 함수
+        async function getRecommendations(location) {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/recommendations?location=${encodeURIComponent(location)}&limit=10`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    restaurants = data.data;
+                    displayRestaurants(restaurants);
+                    switchTab(0); // 백년가게 탭으로 이동
+                }
+            } catch (error) {
+                showError('추천 서비스 중 오류가 발생했습니다.');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 탭 전환
+        function switchTab(tabIndex) {
+            currentTab = tabIndex;
+            
+            // 탭 버튼 상태 변경
+            document.querySelectorAll('.tab').forEach((tab, index) => {
+                tab.classList.toggle('active', index === tabIndex);
+            });
+            
+            // 탭 내용 표시/숨김
+            document.getElementById('restaurantsTab').style.display = tabIndex === 0 ? 'grid' : 'none';
+            document.getElementById('eventsTab').style.display = tabIndex === 1 ? 'grid' : 'none';
+        }
+        
+        // 로딩 표시
+        function showLoading(show) {
+            document.getElementById('loadingMessage').style.display = show ? 'block' : 'none';
+        }
+        
+        // 에러 표시
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 엔터키로 검색
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                search();
+            }
+        });
+        
+        // 지역 선택 변경 시 필터링
+        document.getElementById('regionSelect').addEventListener('change', filterByRegion);
+    </script>
+</body>
+</html>

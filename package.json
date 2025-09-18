@@ -1,0 +1,17 @@
+{
+  "name": "hungry-people",
+  "version": "1.0.0",
+  "description": "Hungry People - 식사 장소 추천 서비스",
+  "main": "index.js",
+  "scripts": {
+    "dev": "python backend/app.py",
+    "build": "echo 'No build step required'",
+    "start": "python backend/app.py"
+  },
+  "keywords": ["restaurant", "recommendation", "food", "korea"],
+  "author": "Hungry People Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
