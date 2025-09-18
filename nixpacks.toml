@@ -1,0 +1,9 @@
+# Python 프로젝트임을 명시
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "python backend/app.py"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

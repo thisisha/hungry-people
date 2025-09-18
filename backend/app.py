@@ -295,11 +295,12 @@ if __name__ == '__main__':
     print("  GET /api/search - 통합 검색")
     print("  GET /api/stats - 통계 정보")
     
-    # 프로덕션 환경에서는 환경 변수에서 포트를 가져옴
-    port = int(os.environ.get('PORT', 5001))
-    debug = os.environ.get('FLASK_ENV') == 'development'
+    # Railway 환경 변수에서 포트를 가져옴
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('RAILWAY_ENVIRONMENT') != 'production'
     
     print(f"\n서버 시작: http://0.0.0.0:{port}")
     print(f"디버그 모드: {debug}")
+    print(f"Railway 환경: {os.environ.get('RAILWAY_ENVIRONMENT', 'local')}")
     
     app.run(debug=debug, host='0.0.0.0', port=port)
