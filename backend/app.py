@@ -15,6 +15,8 @@ from services.data_processor import DataProcessor
 from services.recommendation_engine import RecommendationEngine
 from services.feature_flags import FeatureFlags
 from routes.budget_routes import budget_bp
+from routes.policy_recommendation_routes import policy_recommendation_bp
+from routes.event_recommendation_routes import event_recommendation_bp
 
 app = Flask(__name__)
 CORS(app)  # CORS 활성화
@@ -31,8 +33,10 @@ migrate = Migrate(app, db)
 db_manager = DatabaseManager()
 recommendation_engine = RecommendationEngine()
 
-# 예산 관리 블루프린트 등록
+# 블루프린트 등록
 app.register_blueprint(budget_bp)
+app.register_blueprint(policy_recommendation_bp)
+app.register_blueprint(event_recommendation_bp)
 
 @app.route('/')
 def index():

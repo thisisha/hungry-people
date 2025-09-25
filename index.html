@@ -96,6 +96,63 @@
             font-size: 1rem;
         }
         
+        .filter-input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 120px;
+        }
+        
+        .policy-info, .event-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        .policy-card, .event-card {
+            border-left: 4px solid #28a745;
+        }
+        
+        .restaurant-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+        
+        .restaurant-info span {
+            background: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .payment-info {
+            display: flex;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+        
+        .payment-info span {
+            background: #d4edda;
+            color: #155724;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .cost-estimate {
+            background: #fff3cd;
+            color: #856404;
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            font-weight: bold;
+        }
+        
         .results-section {
             background: white;
             padding: 2rem;
@@ -450,7 +507,17 @@
                 <select id="regionSelect" class="filter-select">
                     <option value="">전체 지역</option>
                 </select>
+                <select id="budgetCategoryFilter" class="filter-select">
+                    <option value="">전체 비목</option>
+                    <option value="다과비">다과비 (카페/베이커리)</option>
+                    <option value="회의비">회의비 (조용한 환경)</option>
+                    <option value="교통비">교통비</option>
+                    <option value="식비">식비</option>
+                </select>
+                <input type="number" id="peopleFilter" class="filter-input" min="1" max="20" value="4" placeholder="인원">
+                <input type="number" id="budgetPerHeadFilter" class="filter-input" min="0" placeholder="1인당 예산(원)">
                 <button onclick="loadRegions()" class="btn">지역 목록 새로고침</button>
+                <button onclick="applyPolicyFilters()" class="btn">정책 기반 추천</button>
             </div>
         </div>
         
@@ -482,6 +549,14 @@
             <div id="restaurantsTab" class="results-grid"></div>
             <div id="eventsTab" class="results-grid" style="display: none;"></div>
             <div id="budgetTab" class="budget-section" style="display: none;">
+                <div style="margin-bottom: 1rem;">
+                    <label for="budgetSelector" style="font-weight: bold; margin-right: 0.5rem;">예산 선택:</label>
+                    <select id="budgetSelector" class="filter-select" style="width: auto; margin-right: 1rem;">
+                        <option value="">예산을 선택하세요</option>
+                    </select>
+                    <button class="btn" onclick="loadAllBudgets()">새로고침</button>
+                </div>
+                
                 <div class="budget-dashboard">
                     <div class="budget-card">
                         <h3>총 예산</h3>
@@ -506,6 +581,7 @@
                 
                 <div style="text-align: center; margin-bottom: 2rem;">
                     <button class="btn" onclick="openCreateBudgetModal()">새 예산 생성</button>
+                    <button class="btn" onclick="openCreateBudgetLineModal()">비목 추가</button>
                     <button class="btn" onclick="openCreateTransactionModal()">거래 추가</button>
                 </div>
                 
@@ -554,6 +630,41 @@
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal('createBudgetModal')">취소</button>
                     <button type="submit" class="btn">생성</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 비목 추가 모달 -->
+    <div id="createBudgetLineModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>비목 추가</h2>
+                <span class="close" onclick="closeModal('createBudgetLineModal')">&times;</span>
+            </div>
+            <form id="createBudgetLineForm">
+                <div class="form-group">
+                    <label for="budgetLineCategory">비목명</label>
+                    <select id="budgetLineCategory" required>
+                        <option value="">비목을 선택하세요</option>
+                        <option value="회의비">회의비</option>
+                        <option value="다과비">다과비</option>
+                        <option value="교통비">교통비</option>
+                        <option value="식비">식비</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="budgetLineAmount">배정 금액 (원)</label>
+                    <input type="number" id="budgetLineAmount" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="budgetLineRulesTag">정책 규칙 태그 (선택사항)</label>
+                    <input type="text" id="budgetLineRulesTag" placeholder="예: 회의비_규칙">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('createBudgetLineModal')">취소</button>
+                    <button type="submit" class="btn">추가</button>
                 </div>
             </form>
         </div>
@@ -627,9 +738,27 @@
         let budgetLines = [];
         let transactions = [];
         let budgetLedgerEnabled = false;
+        let currentBudgetId = null;
         
         // 페이지 로드 시 초기 데이터 로드
         window.onload = function() {
+            // URL 강제 플래그 (?force_budget=1)
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('force_budget') === '1') {
+                    budgetLedgerEnabled = true;
+                }
+            } catch (e) {}
+
+            // URL에서 budget_id 읽기
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const bid = parseInt(params.get('budget_id'));
+                if (!isNaN(bid) && bid > 0) {
+                    currentBudgetId = bid;
+                }
+            } catch (e) {}
+
             checkFeatureFlags();
             loadStats();
             loadRegions();
@@ -644,11 +773,19 @@
                 
                 if (data.success && data.data.budget_ledger_enabled) {
                     budgetLedgerEnabled = true;
-                    document.querySelector('.budget-tab').style.display = 'block';
+                    const tabEl = document.querySelector('.budget-tab');
+                    if (tabEl) tabEl.style.display = 'block';
                 }
             } catch (error) {
                 console.log('Feature flag check failed:', error);
             }
+            // 보수적 폴백: 플래그가 true면 탭 보이기
+            setTimeout(() => {
+                if (budgetLedgerEnabled) {
+                    const tabEl = document.querySelector('.budget-tab');
+                    if (tabEl) tabEl.style.display = 'block';
+                }
+            }, 300);
         }
         
         // 통계 정보 로드
@@ -796,7 +933,7 @@
                     <p>🏢 ${event.host_organization}</p>
                     <span class="region">${event.region}</span>
                     <br><br>
-                    <button class="btn" onclick="getRecommendations('${event.location}')">근처 백년가게 추천</button>
+                    <button class="btn" onclick="getNearEventRecommendations('${event.location}', '${event.region}')">근처 백년가게 추천</button>
                 `;
                 container.appendChild(card);
             });
@@ -821,6 +958,162 @@
             }
         }
         
+        // 정책 기반 추천
+        async function applyPolicyFilters() {
+            const category = document.getElementById('budgetCategoryFilter').value;
+            const location = document.getElementById('searchInput').value;
+            const people = parseInt(document.getElementById('peopleFilter').value) || 4;
+            const budgetPerHead = parseInt(document.getElementById('budgetPerHeadFilter').value) || 0;
+            
+            if (!category) {
+                showToast('비목을 선택해주세요.', true);
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const params = new URLSearchParams({
+                    category: category,
+                    location: location,
+                    people: people.toString(),
+                    budget_per_head: budgetPerHead.toString(),
+                    limit: '20'
+                });
+                
+                const response = await fetch(`${API_BASE_URL}/policy-recommendations?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayPolicyRecommendations(data.data);
+                    switchTab(0); // 백년가게 탭으로 이동
+                } else {
+                    showToast(data.error || '정책 기반 추천에 실패했습니다.', true);
+                }
+            } catch (error) {
+                console.error('정책 기반 추천 오류:', error);
+                showToast('정책 기반 추천 중 오류가 발생했습니다.', true);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 정책 기반 추천 결과 표시
+        function displayPolicyRecommendations(data) {
+            const container = document.getElementById('restaurantsTab');
+            container.innerHTML = '';
+            
+            // 정책 규칙 정보 표시
+            const policyInfo = document.createElement('div');
+            policyInfo.className = 'policy-info';
+            policyInfo.innerHTML = `
+                <h3>📋 ${data.category} 정책 규칙</h3>
+                <p><strong>규칙:</strong> ${data.policy_rule.rule_text}</p>
+                <p><strong>허용 업종:</strong> ${data.policy_rule.allowed_business_types.join(', ')}</p>
+                <p><strong>필수 증빙:</strong> ${data.policy_rule.required_receipt_types.join(', ')}</p>
+                <hr style="margin: 1rem 0;">
+            `;
+            container.appendChild(policyInfo);
+            
+            // 추천 업소 표시
+            data.restaurants.forEach(restaurant => {
+                const card = document.createElement('div');
+                card.className = 'card policy-card';
+                card.innerHTML = `
+                    <h3>${restaurant.name}</h3>
+                    <p>📍 ${restaurant.address}</p>
+                    ${restaurant.phone ? `<p>📞 ${restaurant.phone}</p>` : ''}
+                    <div class="restaurant-info">
+                        <span class="business-type">🏪 ${restaurant.business_type}</span>
+                        ${restaurant.has_private_room ? '<span class="feature">🚪 개인룸</span>' : ''}
+                        <span class="noise-level">🔇 ${restaurant.noise_level === 'low' ? '조용함' : '보통'}</span>
+                        <span class="max-party">👥 최대 ${restaurant.max_party_size}명</span>
+                    </div>
+                    <div class="payment-info">
+                        ${restaurant.tax_invoice_supported ? '<span class="payment">🧾 세금계산서</span>' : ''}
+                        ${restaurant.card_payment_supported ? '<span class="payment">💳 카드결제</span>' : ''}
+                    </div>
+                    <div class="cost-estimate">
+                        예상 1인당 비용: ${formatCurrency(restaurant.estimated_cost_per_person)}
+                    </div>
+                    <span class="region">${restaurant.region}</span>
+                `;
+                container.appendChild(card);
+            });
+            
+            if (data.restaurants.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">조건에 맞는 업소가 없습니다.</p>';
+            }
+        }
+        
+        // 행사장 근처 추천
+        async function getNearEventRecommendations(eventLocation, eventRegion) {
+            showLoading(true);
+            
+            try {
+                const params = new URLSearchParams({
+                    location: eventLocation,
+                    region: eventRegion,
+                    category: '식비',
+                    people: '4',
+                    limit: '15'
+                });
+                
+                const response = await fetch(`${API_BASE_URL}/event-recommendations/near-event?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayNearEventRecommendations(data.data);
+                    switchTab(0); // 백년가게 탭으로 이동
+                } else {
+                    showToast(data.error || '행사장 근처 추천에 실패했습니다.', true);
+                }
+            } catch (error) {
+                console.error('행사장 근처 추천 오류:', error);
+                showToast('행사장 근처 추천 중 오류가 발생했습니다.', true);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 행사장 근처 추천 결과 표시
+        function displayNearEventRecommendations(data) {
+            const container = document.getElementById('restaurantsTab');
+            container.innerHTML = '';
+            
+            // 행사 정보 표시
+            if (data.event_info) {
+                const eventInfo = document.createElement('div');
+                eventInfo.className = 'event-info';
+                eventInfo.innerHTML = `
+                    <h3>🎪 행사 정보</h3>
+                    <p><strong>행사명:</strong> ${data.event_info.event_name}</p>
+                    <p><strong>장소:</strong> ${data.event_info.location}</p>
+                    <p><strong>기간:</strong> ${data.event_info.start_date} ~ ${data.event_info.end_date}</p>
+                    <p><strong>주관:</strong> ${data.event_info.host_organization}</p>
+                    <hr style="margin: 1rem 0;">
+                `;
+                container.appendChild(eventInfo);
+            }
+            
+            // 근처 업소 표시
+            data.nearby_restaurants.forEach(restaurant => {
+                const card = document.createElement('div');
+                card.className = 'card event-card';
+                card.innerHTML = `
+                    <h3>${restaurant.name}</h3>
+                    <p>📍 ${restaurant.address}</p>
+                    ${restaurant.phone ? `<p>📞 ${restaurant.phone}</p>` : ''}
+                    <div class="restaurant-info">
+                        <span class="business-type">🏪 ${restaurant.business_type}</span>
+                        <span class="distance">🚶 ${restaurant.distance_estimate}</span>
+                    </div>
+                    <span class="region">${restaurant.region}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
         // 탭 전환
         function switchTab(tabIndex) {
             currentTab = tabIndex;
@@ -837,18 +1130,65 @@
             
             // 예산 관리 탭이 활성화되면 데이터 로드
             if (tabIndex === 2 && budgetLedgerEnabled) {
+                loadAllBudgets();
+            }
+        }
+        
+        // 모든 예산 목록 로드
+        async function loadAllBudgets() {
+            if (!budgetLedgerEnabled) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/budgets`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const budgetSelector = document.getElementById('budgetSelector');
+                    budgetSelector.innerHTML = '<option value="">예산을 선택하세요</option>';
+                    
+                    data.data.forEach(budget => {
+                        const option = document.createElement('option');
+                        option.value = budget.id;
+                        option.textContent = `${budget.project_name} (${budget.fiscal_year}년)`;
+                        if (budget.id === currentBudgetId) {
+                            option.selected = true;
+                        }
+                        budgetSelector.appendChild(option);
+                    });
+                    
+                    // 현재 선택된 예산이 있으면 로드
+                    if (currentBudgetId) {
+                        loadBudgetData();
+                    }
+                }
+            } catch (error) {
+                console.error('예산 목록 로드 실패:', error);
+            }
+        }
+        
+        // 예산 선택 변경
+        function onBudgetSelectChange() {
+            const selector = document.getElementById('budgetSelector');
+            const selectedId = parseInt(selector.value);
+            
+            if (selectedId && selectedId !== currentBudgetId) {
+                currentBudgetId = selectedId;
+                // URL 업데이트
+                const url = new URL(window.location.href);
+                url.searchParams.set('budget_id', String(currentBudgetId));
+                window.history.replaceState(null, '', url.toString());
+                
                 loadBudgetData();
             }
         }
         
         // 예산 데이터 로드
         async function loadBudgetData() {
-            if (!budgetLedgerEnabled) return;
+            if (!budgetLedgerEnabled || !currentBudgetId) return;
             
             showLoading(true);
             try {
-                // 현재는 첫 번째 예산을 사용 (향후 다중 예산 지원)
-                const response = await fetch(`${API_BASE_URL}/budgets/1`);
+                const response = await fetch(`${API_BASE_URL}/budgets/${currentBudgetId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -968,7 +1308,20 @@
             document.getElementById('createBudgetModal').style.display = 'block';
         }
         
+        function openCreateBudgetLineModal() {
+            if (!currentBudgetId) {
+                showToast('먼저 예산을 선택해주세요.', true);
+                return;
+            }
+            document.getElementById('createBudgetLineModal').style.display = 'block';
+        }
+        
         function openCreateTransactionModal() {
+            if (!currentBudgetId) {
+                showToast('먼저 예산을 선택해주세요.', true);
+                return;
+            }
+            
             // 비목 선택 옵션 업데이트
             const select = document.getElementById('budgetLineId');
             select.innerHTML = '<option value="">비목을 선택하세요</option>';
@@ -1014,12 +1367,55 @@
                 if (data.success) {
                     showToast('예산이 성공적으로 생성되었습니다.');
                     closeModal('createBudgetModal');
-                    loadBudgetData();
+                    // 새 예산으로 전환 및 URL 업데이트
+                    try {
+                        if (data.data && data.data.id) {
+                            currentBudgetId = data.data.id;
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('budget_id', String(currentBudgetId));
+                            window.history.replaceState(null, '', url.toString());
+                        }
+                    } catch (e) {}
+                    // 예산 목록 새로고침 후 새 예산 로드
+                    loadAllBudgets();
                 } else {
                     showToast(data.error || '예산 생성에 실패했습니다.', true);
                 }
             } catch (error) {
                 showToast('예산 생성 중 오류가 발생했습니다.', true);
+            }
+        });
+        
+        // 비목 추가
+        document.getElementById('createBudgetLineForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                category: document.getElementById('budgetLineCategory').value,
+                allocated_amount: parseInt(document.getElementById('budgetLineAmount').value),
+                rules_tag: document.getElementById('budgetLineRulesTag').value || null
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/budgets/${currentBudgetId}/lines`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('비목이 성공적으로 추가되었습니다.');
+                    closeModal('createBudgetLineModal');
+                    loadBudgetData();
+                } else {
+                    showToast(data.error || '비목 추가에 실패했습니다.', true);
+                }
+            } catch (error) {
+                showToast('비목 추가 중 오류가 발생했습니다.', true);
             }
         });
         
@@ -1118,6 +1514,14 @@
         
         // 지역 선택 변경 시 필터링
         document.getElementById('regionSelect').addEventListener('change', filterByRegion);
+        
+        // 예산 선택 변경 시 이벤트 리스너 (DOM 로드 후)
+        document.addEventListener('DOMContentLoaded', function() {
+            const budgetSelector = document.getElementById('budgetSelector');
+            if (budgetSelector) {
+                budgetSelector.addEventListener('change', onBudgetSelectChange);
+            }
+        });
     </script>
 </body>
 </html>

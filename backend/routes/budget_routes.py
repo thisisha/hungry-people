@@ -209,6 +209,35 @@ def get_line_summary(line_id):
             'error': str(e)
         }), 500
 
+@budget_bp.route('', methods=['GET'])
+@FeatureFlags.require_budget_ledger
+def list_budgets():
+    """예산 목록 조회"""
+    try:
+        budgets = Budget.query.order_by(Budget.created_at.desc()).all()
+        budget_list = []
+        
+        for budget in budgets:
+            budget_data = budget.to_dict()
+            # 각 예산의 비목별 집계 정보 포함
+            budget_lines = BudgetLine.query.filter_by(budget_id=budget.id).all()
+            budget_data['budget_lines'] = [line.to_dict() for line in budget_lines]
+            budget_data['total_allocated'] = sum(line.allocated_amount for line in budget_lines)
+            budget_data['total_spent'] = sum(line.spent_amount for line in budget_lines)
+            budget_data['total_remaining'] = budget_data['total_allocated'] - budget_data['total_spent']
+            budget_list.append(budget_data)
+        
+        return jsonify({
+            'success': True,
+            'data': budget_list
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @budget_bp.route('/feature-status', methods=['GET'])
 def get_feature_status():
     """Feature Flag 상태 조회"""
