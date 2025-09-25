@@ -208,6 +208,230 @@
             color: #666;
             margin-top: 0.5rem;
         }
+        
+        /* 예산 관리 스타일 */
+        .budget-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .budget-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .budget-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .budget-card h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .budget-card .amount {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .budget-card .label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4caf50;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-fill.warning {
+            background: #ff9800;
+        }
+        
+        .progress-fill.danger {
+            background: #f44336;
+        }
+        
+        .budget-lines {
+            margin-bottom: 2rem;
+        }
+        
+        .budget-line-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        .budget-line-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .budget-line-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .budget-line-amounts {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .transactions-table th,
+        .transactions-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .transactions-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            display: none;
+        }
+        
+        .toast.error {
+            background: #f44336;
+        }
     </style>
 </head>
 <body>
@@ -249,6 +473,7 @@
             <div class="tabs">
                 <button class="tab active" onclick="switchTab(0)">백년가게</button>
                 <button class="tab" onclick="switchTab(1)">행사일정</button>
+                <button class="tab budget-tab" onclick="switchTab(2)" style="display: none;">예산 관리</button>
             </div>
             
             <div id="errorMessage" class="error" style="display: none;"></div>
@@ -256,21 +481,175 @@
             
             <div id="restaurantsTab" class="results-grid"></div>
             <div id="eventsTab" class="results-grid" style="display: none;"></div>
+            <div id="budgetTab" class="budget-section" style="display: none;">
+                <div class="budget-dashboard">
+                    <div class="budget-card">
+                        <h3>총 예산</h3>
+                        <div class="amount" id="totalBudget">0원</div>
+                        <div class="label">전체 예산</div>
+                    </div>
+                    <div class="budget-card">
+                        <h3>집행액</h3>
+                        <div class="amount" id="totalSpent">0원</div>
+                        <div class="label">사용된 금액</div>
+                    </div>
+                    <div class="budget-card">
+                        <h3>잔액</h3>
+                        <div class="amount" id="totalRemaining">0원</div>
+                        <div class="label">남은 금액</div>
+                    </div>
+                </div>
+                
+                <div class="budget-lines" id="budgetLinesContainer">
+                    <!-- 비목별 정보가 여기에 표시됩니다 -->
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <button class="btn" onclick="openCreateBudgetModal()">새 예산 생성</button>
+                    <button class="btn" onclick="openCreateTransactionModal()">거래 추가</button>
+                </div>
+                
+                <div id="transactionsContainer">
+                    <h3>최근 거래 내역</h3>
+                    <table class="transactions-table" id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>가맹점</th>
+                                <th>금액</th>
+                                <th>결제수단</th>
+                                <th>증빙유형</th>
+                                <th>메모</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- 거래 내역이 여기에 표시됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- 예산 생성 모달 -->
+    <div id="createBudgetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>새 예산 생성</h2>
+                <span class="close" onclick="closeModal('createBudgetModal')">&times;</span>
+            </div>
+            <form id="createBudgetForm">
+                <div class="form-group">
+                    <label for="projectName">프로젝트명</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="fiscalYear">회계연도</label>
+                    <input type="number" id="fiscalYear" min="2020" max="2030" value="2024" required>
+                </div>
+                <div class="form-group">
+                    <label for="totalAmount">총 예산 (원)</label>
+                    <input type="number" id="totalAmount" min="1" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('createBudgetModal')">취소</button>
+                    <button type="submit" class="btn">생성</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 거래 추가 모달 -->
+    <div id="createTransactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>거래 추가</h2>
+                <span class="close" onclick="closeModal('createTransactionModal')">&times;</span>
+            </div>
+            <form id="createTransactionForm">
+                <div class="form-group">
+                    <label for="budgetLineId">비목</label>
+                    <select id="budgetLineId" required>
+                        <option value="">비목을 선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transactionDate">날짜</label>
+                    <input type="date" id="transactionDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="vendorName">가맹점명</label>
+                    <input type="text" id="vendorName" required>
+                </div>
+                <div class="form-group">
+                    <label for="transactionAmount">금액 (원)</label>
+                    <input type="number" id="transactionAmount" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethod">결제수단</label>
+                    <select id="paymentMethod" required>
+                        <option value="">선택하세요</option>
+                        <option value="card">카드</option>
+                        <option value="tax_invoice">세금계산서</option>
+                        <option value="cash">현금</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="receiptType">증빙유형</label>
+                    <select id="receiptType" required>
+                        <option value="">선택하세요</option>
+                        <option value="card_slip">카드전표</option>
+                        <option value="tax_invoice">세금계산서</option>
+                        <option value="none">없음</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transactionMemo">메모</label>
+                    <textarea id="transactionMemo" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('createTransactionModal')">취소</button>
+                    <button type="submit" class="btn">추가</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div id="toast" class="toast"></div>
 
     <script>
         const API_BASE_URL = window.location.origin + '/api';
         let currentTab = 0;
         let restaurants = [];
         let events = [];
+        let budgets = [];
+        let budgetLines = [];
+        let transactions = [];
+        let budgetLedgerEnabled = false;
         
         // 페이지 로드 시 초기 데이터 로드
         window.onload = function() {
+            checkFeatureFlags();
             loadStats();
             loadRegions();
             loadInitialData();
         };
+        
+        // Feature Flag 확인
+        async function checkFeatureFlags() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/budgets/feature-status`);
+                const data = await response.json();
+                
+                if (data.success && data.data.budget_ledger_enabled) {
+                    budgetLedgerEnabled = true;
+                    document.querySelector('.budget-tab').style.display = 'block';
+                }
+            } catch (error) {
+                console.log('Feature flag check failed:', error);
+            }
+        }
         
         // 통계 정보 로드
         async function loadStats() {
@@ -454,6 +833,265 @@
             // 탭 내용 표시/숨김
             document.getElementById('restaurantsTab').style.display = tabIndex === 0 ? 'grid' : 'none';
             document.getElementById('eventsTab').style.display = tabIndex === 1 ? 'grid' : 'none';
+            document.getElementById('budgetTab').style.display = tabIndex === 2 ? 'block' : 'none';
+            
+            // 예산 관리 탭이 활성화되면 데이터 로드
+            if (tabIndex === 2 && budgetLedgerEnabled) {
+                loadBudgetData();
+            }
+        }
+        
+        // 예산 데이터 로드
+        async function loadBudgetData() {
+            if (!budgetLedgerEnabled) return;
+            
+            showLoading(true);
+            try {
+                // 현재는 첫 번째 예산을 사용 (향후 다중 예산 지원)
+                const response = await fetch(`${API_BASE_URL}/budgets/1`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    budgets = [data.data];
+                    budgetLines = data.data.budget_lines || [];
+                    updateBudgetDashboard();
+                    updateBudgetLines();
+                    loadTransactions();
+                } else {
+                    // 예산이 없으면 빈 상태로 표시
+                    updateBudgetDashboard();
+                    updateBudgetLines();
+                }
+            } catch (error) {
+                console.error('예산 데이터 로드 실패:', error);
+                updateBudgetDashboard();
+                updateBudgetLines();
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 예산 대시보드 업데이트
+        function updateBudgetDashboard() {
+            const totalBudget = budgetLines.reduce((sum, line) => sum + line.allocated_amount, 0);
+            const totalSpent = budgetLines.reduce((sum, line) => sum + line.spent_amount, 0);
+            const totalRemaining = totalBudget - totalSpent;
+            
+            document.getElementById('totalBudget').textContent = formatCurrency(totalBudget);
+            document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
+            document.getElementById('totalRemaining').textContent = formatCurrency(totalRemaining);
+        }
+        
+        // 비목별 정보 업데이트
+        function updateBudgetLines() {
+            const container = document.getElementById('budgetLinesContainer');
+            container.innerHTML = '';
+            
+            if (budgetLines.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">비목이 없습니다. 새 예산을 생성해보세요.</p>';
+                return;
+            }
+            
+            budgetLines.forEach(line => {
+                const item = document.createElement('div');
+                item.className = 'budget-line-item';
+                
+                const spendingRate = line.spending_rate;
+                const progressClass = spendingRate >= 90 ? 'danger' : spendingRate >= 70 ? 'warning' : '';
+                
+                item.innerHTML = `
+                    <div class="budget-line-header">
+                        <div class="budget-line-name">${line.category}</div>
+                        <div class="budget-line-amounts">
+                            <span>집행: ${formatCurrency(line.spent_amount)}</span>
+                            <span>잔액: ${formatCurrency(line.remaining_amount)}</span>
+                            <span>집행률: ${spendingRate.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${progressClass}" style="width: ${Math.min(spendingRate, 100)}%"></div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        // 거래 내역 로드
+        async function loadTransactions() {
+            if (!budgetLedgerEnabled || budgetLines.length === 0) return;
+            
+            try {
+                const allTransactions = [];
+                for (const line of budgetLines) {
+                    const response = await fetch(`${API_BASE_URL}/budgets/lines/${line.id}/summary`);
+                    const data = await response.json();
+                    if (data.success) {
+                        allTransactions.push(...data.data.transactions);
+                    }
+                }
+                
+                // 날짜순 정렬
+                allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                transactions = allTransactions.slice(0, 10); // 최근 10개만 표시
+                updateTransactionsTable();
+            } catch (error) {
+                console.error('거래 내역 로드 실패:', error);
+            }
+        }
+        
+        // 거래 내역 테이블 업데이트
+        function updateTransactionsTable() {
+            const tbody = document.getElementById('transactionsTableBody');
+            tbody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666; padding: 2rem;">거래 내역이 없습니다.</td></tr>';
+                return;
+            }
+            
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.vendor_name}</td>
+                    <td>${formatCurrency(transaction.amount)}</td>
+                    <td>${getPaymentMethodLabel(transaction.payment_method)}</td>
+                    <td>${getReceiptTypeLabel(transaction.receipt_type)}</td>
+                    <td>${transaction.memo || '-'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 모달 열기/닫기
+        function openCreateBudgetModal() {
+            document.getElementById('createBudgetModal').style.display = 'block';
+        }
+        
+        function openCreateTransactionModal() {
+            // 비목 선택 옵션 업데이트
+            const select = document.getElementById('budgetLineId');
+            select.innerHTML = '<option value="">비목을 선택하세요</option>';
+            budgetLines.forEach(line => {
+                const option = document.createElement('option');
+                option.value = line.id;
+                option.textContent = `${line.category} (잔액: ${formatCurrency(line.remaining_amount)})`;
+                select.appendChild(option);
+            });
+            
+            // 오늘 날짜로 설정
+            document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('createTransactionModal').style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.getElementById(modalId.replace('Modal', 'Form')).reset();
+        }
+        
+        // 예산 생성
+        document.getElementById('createBudgetForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                project_name: document.getElementById('projectName').value,
+                fiscal_year: parseInt(document.getElementById('fiscalYear').value),
+                total_amount: parseInt(document.getElementById('totalAmount').value)
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/budgets`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('예산이 성공적으로 생성되었습니다.');
+                    closeModal('createBudgetModal');
+                    loadBudgetData();
+                } else {
+                    showToast(data.error || '예산 생성에 실패했습니다.', true);
+                }
+            } catch (error) {
+                showToast('예산 생성 중 오류가 발생했습니다.', true);
+            }
+        });
+        
+        // 거래 추가
+        document.getElementById('createTransactionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                budget_line_id: parseInt(document.getElementById('budgetLineId').value),
+                date: document.getElementById('transactionDate').value,
+                vendor_name: document.getElementById('vendorName').value,
+                amount: parseInt(document.getElementById('transactionAmount').value),
+                payment_method: document.getElementById('paymentMethod').value,
+                receipt_type: document.getElementById('receiptType').value,
+                memo: document.getElementById('transactionMemo').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/budgets/lines/${formData.budget_line_id}/transactions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('거래가 성공적으로 추가되었습니다.');
+                    closeModal('createTransactionModal');
+                    loadBudgetData();
+                } else {
+                    showToast(data.error || '거래 추가에 실패했습니다.', true);
+                }
+            } catch (error) {
+                showToast('거래 추가 중 오류가 발생했습니다.', true);
+            }
+        });
+        
+        // 유틸리티 함수들
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ko-KR').format(amount) + '원';
+        }
+        
+        function getPaymentMethodLabel(method) {
+            const labels = {
+                'card': '카드',
+                'tax_invoice': '세금계산서',
+                'cash': '현금'
+            };
+            return labels[method] || method;
+        }
+        
+        function getReceiptTypeLabel(type) {
+            const labels = {
+                'card_slip': '카드전표',
+                'tax_invoice': '세금계산서',
+                'none': '없음'
+            };
+            return labels[type] || type;
+        }
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
         }
         
         // 로딩 표시
