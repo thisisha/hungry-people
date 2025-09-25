@@ -1,6 +1,8 @@
 import os
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from flask_migrate import Migrate
+from datetime import datetime
 import sys
 import os
 
@@ -8,15 +10,29 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from models.database import DatabaseManager
+from models.budget_models import db
 from services.data_processor import DataProcessor
 from services.recommendation_engine import RecommendationEngine
+from services.feature_flags import FeatureFlags
+from routes.budget_routes import budget_bp
 
 app = Flask(__name__)
 CORS(app)  # CORS 활성화
 
+# 데이터베이스 설정
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hungry_people.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# SQLAlchemy 초기화
+db.init_app(app)
+migrate = Migrate(app, db)
+
 # 데이터베이스 매니저 및 추천 엔진 초기화
 db_manager = DatabaseManager()
 recommendation_engine = RecommendationEngine()
+
+# 예산 관리 블루프린트 등록
+app.register_blueprint(budget_bp)
 
 @app.route('/')
 def index():
@@ -34,6 +50,14 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'message': 'Hungry People API 서버가 정상적으로 작동 중입니다.'
+    })
+
+@app.route('/healthz', methods=['GET'])
+def healthz():
+    """Kubernetes 스타일 헬스체크"""
+    return jsonify({
+        'status': 'ok',
+        'timestamp': datetime.utcnow().isoformat()
     })
 
 @app.route('/api/restaurants', methods=['GET'])
